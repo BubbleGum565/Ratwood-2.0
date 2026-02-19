@@ -46,6 +46,9 @@
 	/// A luminescence-shifted value of the last color calculated for chatmessage overlays
 	var/chat_color_darkened
 
+	/// Overwatch: per-atom interaction history (doors, items, etc.)
+	var/list/overwatch_history
+
 	var/voicecolor_override
 
 	///overlays that should remain on top and not normally removed when using cut_overlay functions, like c4.
@@ -211,6 +214,11 @@
  * * clears the light object
  */
 /atom/Destroy()
+	// Clean up any per-atom overwatch history
+	if(overwatch_history)
+		QDEL_LIST(overwatch_history)
+		overwatch_history = null
+
 	if(alternate_appearances)
 		for(var/K in alternate_appearances)
 			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
@@ -1083,6 +1091,14 @@
 	var/postfix = "[sobject][saddition][hp]"
 
 	var/message = "has [what_done] [starget][postfix]"
+	// OVERWATCH: mirror combat logs into the Overwatch system so tickets
+	// can show both what harmed a player and what they harmed.
+	if(ismob(user) || ismob(target))
+		var/mob/living/attacker = ismob(user) ? user : null
+		var/mob/living/victim = ismob(target) ? target : null
+		// Pass 0 damage here; detailed damage amounts come from other sources
+		// where available. The action verb (what_done) is used as type.
+		overwatch_record_attack(attacker, victim, 0, what_done, istype(object, /obj/item) ? object : null)
 	user.log_message(message, LOG_ATTACK, color="red")
 
 	if(log_seen)

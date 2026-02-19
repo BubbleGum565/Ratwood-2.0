@@ -817,6 +817,8 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 
 /obj/item/proc/dropped(mob/user, silent = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
+	// OVERWATCH: Track item dropped
+	overwatch_record_interact(user, src, "dropped")
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.Remove(user)
@@ -843,6 +845,8 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 // called just as an item is picked up (loc is not yet changed)
 /obj/item/proc/pickup(mob/user)
 	SHOULD_CALL_PARENT(TRUE)
+	// OVERWATCH: Track item picked up
+	overwatch_record_interact(user, src, "picked up")
 	SEND_SIGNAL(src, COMSIG_ITEM_PICKUP, user)
 	item_flags |= IN_INVENTORY
 
@@ -869,6 +873,8 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 // Initial is used to indicate whether or not this is the initial equipment (job datums etc) or just a player doing it
 /obj/item/proc/equipped(mob/user, slot, initial = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
+	// OVERWATCH: Track item equipped
+	overwatch_record_interact(user, src, "equipped")
 	SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
 	SEND_SIGNAL(user, COMSIG_ITEM_EQUIPPED, src, slot)
 	for(var/X in actions)

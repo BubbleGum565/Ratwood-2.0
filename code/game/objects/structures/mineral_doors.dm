@@ -314,8 +314,11 @@
 	else
 		Open(silent)
 
-/obj/structure/mineral_door/proc/Open(silent = FALSE)
+/obj/structure/mineral_door/proc/Open(silent = FALSE, mob/user)
 	isSwitchingStates = TRUE
+	// OVERWATCH: Track door opened
+	if(user)
+		overwatch_record_interact(user, src, "opened")
 	if(!silent)
 		playsound(src, openSound, 100)
 	if(!windowed)
@@ -332,12 +335,15 @@
 	if(close_delay != -1)
 		addtimer(CALLBACK(src, PROC_REF(Close)), close_delay)
 
-/obj/structure/mineral_door/proc/Close(silent = FALSE, autobump = FALSE)
+/obj/structure/mineral_door/proc/Close(silent = FALSE, autobump = FALSE, mob/user)
 	if(isSwitchingStates || !door_opened)
 		return
 	var/turf/T = get_turf(src)
 	for(var/mob/living/L in T)
 		return
+	// OVERWATCH: Track door closed
+	if(user)
+		overwatch_record_interact(user, src, "closed")
 	isSwitchingStates = TRUE
 	if(!silent)
 		playsound(src, closeSound, 100)
@@ -690,6 +696,8 @@
 				if(lockprogress >= locktreshold)
 					picked = TRUE
 					to_chat(user, "<span class='deadsay'>The locking mechanism gives.</span>")
+					// OVERWATCH: Track successful lockpick
+					overwatch_record_interact(user, src, "lockpicked")
 					if(ishuman(user))
 						var/mob/living/carbon/human/H = user
 						message_admins("[H.real_name]([key_name(user)]) successfully lockpicked [src.name] & [locked ? "unlocked" : "locked"] it. [ADMIN_JMP(src)]")
@@ -734,11 +742,17 @@
 	if(isSwitchingStates || door_opened)
 		return
 	if(locked)
+		// OVERWATCH: Track unlock
+		if(user)
+			overwatch_record_interact(user, src, "unlocked")
 		user?.visible_message(span_warning("[user] unlocks [src]."), \
 			span_notice("I unlock [src]."))
 		playsound(src, unlocksound, 100)
 		locked = 0
 	else
+		// OVERWATCH: Track lock
+		if(user)
+			overwatch_record_interact(user, src, "locked")
 		user?.visible_message(span_warning("[user] locks [src]."), \
 			span_notice("I lock [src]."))
 		playsound(src, locksound, 100)
