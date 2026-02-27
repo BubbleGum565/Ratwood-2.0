@@ -954,7 +954,6 @@
 	var/datum/sex_action/action = SEX_ACTION(current_action)
 	show_progress = 1
 	suppress_moan = FALSE
-	target?.sexcon?.suppress_moan = FALSE
 	action.on_start(user, target)
 	find_occupying_furniture()
 	find_occupying_grass()
